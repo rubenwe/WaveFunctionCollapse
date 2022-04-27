@@ -3,6 +3,7 @@
 public class AsciiGridView
 {
     private readonly Grid _grid;
+    private Tile? _marked;
 
     public AsciiGridView(Grid grid)
     {
@@ -16,7 +17,14 @@ public class AsciiGridView
         {
             for (var x = 0; x < _grid.Width; x++)
             {
-                sb.Append(_grid.GetTile(x, y).Type switch
+                var tile = _grid.GetTile(x, y);
+                if (_marked == tile)
+                {
+                    sb.Append("©");
+                    continue;
+                }
+
+                sb.Append(tile.Type switch
                 {
                     TileType.OverConstraint => 'X',
                     TileType.Empty => ' ',
@@ -32,7 +40,7 @@ public class AsciiGridView
                     TileType.RoadTLeft => '╣',
                     TileType.RoadTRight => '╠',
                     TileType.BuildingSite => '█',
-                    
+                
                     _ => "?"
                 });
             }
@@ -40,5 +48,11 @@ public class AsciiGridView
             sb.AppendLine();
         }
         return sb.ToString();
+    }
+
+    public AsciiGridView Mark(Tile tile)
+    {
+        _marked = tile;
+        return this;
     }
 }

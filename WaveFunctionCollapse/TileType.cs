@@ -16,5 +16,5 @@ public enum TileType
     RoadCBottomRight = 1 << 9,
     RoadCTopLeft = 1 << 10,
     RoadCTopRight = 1 << 11,
-    BuildingSite = 1 << 12,
+    BuildingSite = 1 << 12
 }

@@ -1,11 +1,12 @@
-﻿using System.Numerics;
+﻿using System.Collections;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 namespace WaveFunctionCollapse;
 
-public class Grid
+public class Grid : IEnumerable<TileType>
 {
     private const sbyte MaxStateCompareValue = 63;
     private readonly TileType[] _data;
@@ -69,7 +70,8 @@ public class Grid
 
     public Tile GetTile(int x, int y)
     {
-        return new Tile(x, y, this[x, y]);
+        var idx = x + y * Width;
+        return new Tile(x, y, _data[idx], _state[idx] == sbyte.MaxValue);
     }
 
     public Tile? FindMostConstrainedTile()
@@ -83,8 +85,8 @@ public class Grid
         var x = minIdx % Width;
         var y = minIdx / Width;
         ref var currentStates = ref _data[minIdx];
-        
-        return new Tile(x, y, currentStates);
+
+        return new Tile(x, y, currentStates, false);
     }
 
     private int FindMinVector()
@@ -180,5 +182,15 @@ public class Grid
         var index = x + Width * y;
         _data[index] = tileType;
         _state[index] = sbyte.MaxValue;
+    }
+
+    public IEnumerator<TileType> GetEnumerator()
+    {
+        return _data.AsEnumerable().GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _data.GetEnumerator();
     }
 }
