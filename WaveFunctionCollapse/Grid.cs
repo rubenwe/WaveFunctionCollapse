@@ -9,6 +9,7 @@ namespace WaveFunctionCollapse;
 public class Grid : IEnumerable<TileType>
 {
     private const sbyte MaxStateCompareValue = 63;
+    private const sbyte Collapsed = sbyte.MaxValue;
     private readonly TileType[] _data;
     private readonly sbyte[] _state;
     private static readonly  Vector256<sbyte> ComparisonStartVector =  Vector256.Create(MaxStateCompareValue);
@@ -38,7 +39,7 @@ public class Grid : IEnumerable<TileType>
 
         for (var i = _data.Length; i < _state.Length; i++)
         {
-            _state[i] = sbyte.MaxValue;
+            _state[i] = Collapsed;
         }
     }
 
@@ -47,7 +48,7 @@ public class Grid : IEnumerable<TileType>
         var index = x + Width * y;
         ref var state = ref _state[index];
         ref var value = ref _data[index];
-        if (state == sbyte.MaxValue)
+        if (state == Collapsed)
         {
             if ((mask & value) != 0) return;
             OverConstraintTileException.Throw(x, y);
@@ -67,11 +68,18 @@ public class Grid : IEnumerable<TileType>
         _data[index] = type;
         _state[index] = 1;
     }
+    
+    public void SetTileCollapsed(int x, int y, TileType type)
+    {
+        var index = x + y * Width;
+        _data[index] = type;
+        _state[index] = Collapsed;
+    }
 
     public Tile GetTile(int x, int y)
     {
         var idx = x + y * Width;
-        return new Tile(x, y, _data[idx], _state[idx] == sbyte.MaxValue);
+        return new Tile(x, y, _data[idx], _state[idx] == Collapsed);
     }
 
     public Tile? FindMostConstrainedTile()
@@ -129,7 +137,7 @@ public class Grid : IEnumerable<TileType>
         for (var i = 0; i < _state.Length; i++)
         {
             var state = _state[i];
-            if (state == sbyte.MaxValue) continue;
+            if (state == Collapsed) continue;
 
             if (state < minState)
             {
@@ -181,7 +189,7 @@ public class Grid : IEnumerable<TileType>
     {
         var index = x + Width * y;
         _data[index] = tileType;
-        _state[index] = sbyte.MaxValue;
+        _state[index] = Collapsed;
     }
 
     public IEnumerator<TileType> GetEnumerator()

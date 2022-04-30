@@ -5,18 +5,20 @@ namespace WaveFunctionCollapse;
 public class TileCollapser
 {
     private readonly Grid _grid;
+    private readonly List<IGridPostProcessor> _postProcessors;
     private readonly IReadOnlyList<IGridAcceptanceCriterion> _criteria;
     private readonly IReadOnlyList<ITileCollapseEvaluator> _collapseEvaluators;
     private readonly Dictionary<TileType, TileAdjacencyRule> _adjacencyRules;
 
 
-    public TileCollapser(
-        Grid grid,
+    public TileCollapser(Grid grid,
         IReadOnlyList<TileAdjacencyRule> adjacencyRules,
         IReadOnlyList<ITileCollapseEvaluator>? collapseEvaluators = null,
-        IReadOnlyList<IGridAcceptanceCriterion>? criteria = null)
+        IReadOnlyList<IGridAcceptanceCriterion>? criteria = null, 
+        List<IGridPostProcessor>? gridPostProcessors = null)
     {
         _grid = grid;
+        _postProcessors = gridPostProcessors ?? new List<IGridPostProcessor>();
         _criteria = criteria ?? new List<IGridAcceptanceCriterion>();
         _collapseEvaluators = collapseEvaluators ?? new List<ITileCollapseEvaluator>();
         _adjacencyRules = adjacencyRules.ToDictionary(rule => rule.Collapsed);
@@ -70,8 +72,16 @@ public class TileCollapser
 
                 if (_criteria.All(c => c.IsMetBy(grid)))
                 {
-                    solvedGrid = grid;
-                    return true;
+                    foreach (var postProcessor in _postProcessors)
+                    {
+                        postProcessor.Process(grid);
+                    }
+
+                    if (_criteria.All(c => c.IsMetBy(grid)))
+                    {
+                        solvedGrid = grid;
+                        return true;
+                    }
                 }
             }
             catch (OverConstraintTileException)

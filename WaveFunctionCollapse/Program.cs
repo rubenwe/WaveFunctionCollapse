@@ -2,7 +2,7 @@
 using WaveFunctionCollapse;
 using static WaveFunctionCollapse.TileType;
 
-var startGrid = new Grid(30, 12);
+var startGrid = new Grid(30, 14);
 
 // Create empty boundary
 startGrid.SetRow(0, Empty);
@@ -10,7 +10,8 @@ startGrid.SetRow(startGrid.Height - 1, Empty);
 startGrid.SetColumn(0, Empty);
 startGrid.SetColumn(startGrid.Width - 1, Empty);
 
-var rand = new Random();
+var seed = DateTime.Now.Millisecond;
+var rand = new Random(seed);
 
 // Set up road endpoints
 var start = (x: 0, y: rand.Next(2, startGrid.Height - 3));
@@ -24,26 +25,31 @@ var sw = Stopwatch.StartNew();
 
 var evaluators = new List<ITileCollapseEvaluator>
 {
-    new ConnectedRoadEvaluator(),
     new MinimumDistanceEvaluator(BuildingSite, 4, 1f),
-    new MinimumDistanceEvaluator(RoadCross, 4, 0.7f),
-    new MinimumDistanceEvaluator(RoadVertical, 3, 0.6f),
-    new MinimumDistanceEvaluator(RoadHorizontal, 2, 0.4f),
-    new MinimumDistanceEvaluator(RoadCBottomLeft | RoadCTopLeft | RoadCBottomRight | RoadCTopRight, 4, 0.8f),
-    new MinimumDistanceEvaluator(RoadTBottom | RoadTTop, 3, 0.8f),
-    new MinimumDistanceEvaluator(RoadTRight | RoadTLeft, 3, 0.8f),
+    new MinimumDistanceEvaluator(RoadCross, 5, 0.7f),
+    new MinimumDistanceEvaluator(RoadTBottom | RoadTTop, 4, 0.8f),
+    new MinimumDistanceEvaluator(RoadTRight | RoadTLeft, 4, 0.8f),
     new MaximumDistanceEvaluator(BuildingSite, RoadHorizontal | RoadVertical, 1),
-    new PreferEmptyEvaluator(0.75f),
-    new RandomCollapseEvaluator(seed: DateTime.Now.Millisecond)
+    new PreferEmptyEvaluator(0.55f),
+    new RandomCollapseEvaluator(seed: seed)
 };
 
 var criteria = new List<IGridAcceptanceCriterion>
 {
     new MinCountCriterion(BuildingSite, 4),
+    new MaxFreeSpaceCriterion(0.5f),
     new StartAndEndAreConnectedCriterion(start, end)
 };
 
-var collapser = new TileCollapser(startGrid, TileRules.Default, evaluators, criteria);
+var postProcessors = new List<IGridPostProcessor>
+{
+    new PruneSelfConnectedRoadLoopsPostProcessor(start, end),
+    new PruneUnconnectedRoadsPostProcessor(start),
+    new FixupRoadTypesPostProcessor(),
+    new DeleteUnconnectedBuildingSitesPostProcessor()
+};
+
+var collapser = new TileCollapser(startGrid, TileRules.Default, evaluators, criteria, postProcessors);
 if (collapser.TryCollapse(10000, out var grid, out var tries))
 {
     Console.WriteLine($"Collapsed in {tries} tries!");
