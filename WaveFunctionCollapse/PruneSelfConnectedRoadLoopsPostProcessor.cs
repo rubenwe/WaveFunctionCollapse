@@ -5,7 +5,7 @@ using QuikGraph.Algorithms.ShortestPath;
 
 namespace WaveFunctionCollapse;
 
-public class PruneSelfConnectedRoadLoopsPostProcessor : IGridPostProcessor<TileType>
+public class PruneSelfConnectedRoadLoopsPostProcessor : IGridPostProcessor<TileTypes>
 {
     private readonly (int x, int y) _start;
     private readonly (int x, int y) _end;
@@ -16,20 +16,20 @@ public class PruneSelfConnectedRoadLoopsPostProcessor : IGridPostProcessor<TileT
         _end = end;
     }
 
-    public void Process(Grid<TileType> grid)
+    public void Process(Grid<TileTypes> grid)
     {
         var start = grid.GetCell(_start.x, _start.y);
         var end = grid.GetCell(_end.x, _end.y);
-        var graph = new AdjacencyGraph<Cell<TileType>, Edge<Cell<TileType>>>(false);
+        var graph = new AdjacencyGraph<Cell<TileTypes>, Edge<Cell<TileTypes>>>(false);
 
         BuildGraph(start, null);
 
-        var roadsToRemove = new HashSet<Cell<TileType>>();
+        var roadsToRemove = new HashSet<Cell<TileTypes>>();
         
-        static double EdgeWeights(Edge<Cell<TileType>> arg) => 1;
-        var shortestPath = new DijkstraShortestPathAlgorithm<Cell<TileType>, Edge<Cell<TileType>>>(graph, EdgeWeights);
+        static double EdgeWeights(Edge<Cell<TileTypes>> arg) => 1;
+        var shortestPath = new DijkstraShortestPathAlgorithm<Cell<TileTypes>, Edge<Cell<TileTypes>>>(graph, EdgeWeights);
 
-        var startVisitor = new VertexPredecessorRecorderObserver<Cell<TileType>, Edge<Cell<TileType>>>();
+        var startVisitor = new VertexPredecessorRecorderObserver<Cell<TileTypes>, Edge<Cell<TileTypes>>>();
         using (startVisitor.Attach(shortestPath)) shortestPath.Compute(start);
         
         foreach (var vertex in graph.Vertices.ToList())
@@ -57,15 +57,15 @@ public class PruneSelfConnectedRoadLoopsPostProcessor : IGridPostProcessor<TileT
 
         foreach (var tile in roadsToRemove)
         {
-            grid.SetCellCollapsed(tile.X, tile.Y, TileType.Empty);
+            grid.SetCellCollapsed(tile.X, tile.Y, TileTypes.Empty);
         }
 
-        void BuildGraph(Cell<TileType> tile, Cell<TileType>? previous)
+        void BuildGraph(Cell<TileTypes> tile, Cell<TileTypes>? previous)
         {
             if (!tile.IsCollapsed || !tile.Type.IsRoad()) return;
             
             var wasKnown = !graph.AddVertex(tile);
-            if (previous.HasValue) graph.AddEdge(new Edge<Cell<TileType>>(previous.Value, tile));
+            if (previous.HasValue) graph.AddEdge(new Edge<Cell<TileTypes>>(previous.Value, tile));
             if (wasKnown) return;
             
             if (tile.X > 0) BuildGraph(grid.GetCell(tile.X - 1, tile.Y), tile);

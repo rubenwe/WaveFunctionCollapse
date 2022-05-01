@@ -1,6 +1,6 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class PruneUnconnectedRoadsPostProcessor : IGridPostProcessor<TileType>
+public class PruneUnconnectedRoadsPostProcessor : IGridPostProcessor<TileTypes>
 {
     private readonly (int x, int y) _start;
 
@@ -9,10 +9,10 @@ public class PruneUnconnectedRoadsPostProcessor : IGridPostProcessor<TileType>
         _start = start;
     }
 
-    public void Process(Grid<TileType> grid)
+    public void Process(Grid<TileTypes> grid)
     {
         var start = grid.GetCell(_start.x, _start.y);
-        var visited = new HashSet<Cell<TileType>>();
+        var visited = new HashSet<Cell<TileTypes>>();
 
         SearchConnected(start);
 
@@ -23,12 +23,12 @@ public class PruneUnconnectedRoadsPostProcessor : IGridPostProcessor<TileType>
                 var tile = grid.GetCell(x,y);
                 if (tile.Type.IsRoad() && !visited.Contains(tile))
                 {
-                    grid.SetCellCollapsed(x, y, TileType.Empty);
+                    grid.SetCellCollapsed(x, y, TileTypes.Empty);
                 }
             }
         }
 
-        void SearchConnected(Cell<TileType> tile)
+        void SearchConnected(Cell<TileTypes> tile)
         {
             if (!visited.Add(tile)) return;
             if (!tile.IsCollapsed || !tile.Type.IsRoad()) return;

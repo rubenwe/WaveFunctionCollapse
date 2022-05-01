@@ -1,7 +1,7 @@
 ﻿namespace WaveFunctionCollapse;
 
 [Flags]
-public enum TileType
+public enum TileTypes
 {
     OverConstraint = 0,
     Empty = 1 << 0,

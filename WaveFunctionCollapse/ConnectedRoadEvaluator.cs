@@ -1,8 +1,8 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class ConnectedRoadEvaluator : ICellCollapseEvaluator<TileType>
+public class ConnectedRoadEvaluator : ICellCollapseEvaluator<TileTypes>
 {
-    public void Evaluate(Grid<TileType> grid, Cell<TileType> cell, ReadOnlySpan<int> possibleStates, Span<float> evaluations)
+    public void Evaluate(Grid<TileTypes> grid, Cell<TileTypes> cell, ReadOnlySpan<int> possibleStates, Span<float> evaluations)
     {
         if (!cell.Type.IsRoad() || possibleStates.Length == 1) return;
 
@@ -36,7 +36,7 @@ public class ConnectedRoadEvaluator : ICellCollapseEvaluator<TileType>
         {
             for (var i = 0; i < possibleStates.Length; i++)
             {
-                if (((TileType) possibleStates[i]).IsRoad())
+                if (((TileTypes) possibleStates[i]).IsRoad())
                 {
                     evaluations[i] = 0f;
                 }

@@ -1,10 +1,38 @@
-﻿using static WaveFunctionCollapse.TileType;
+﻿using static WaveFunctionCollapse.TileTypes;
+using static WaveFunctionCollapse.TerrainTypes;
 
 namespace WaveFunctionCollapse;
 
-public static class TileRules
+public static class CellRules
 {
-    public static IReadOnlyList<CellAdjacencyRule<TileType>> Ground { get; } = new List<CellAdjacencyRule<TileType>>
+    public static IReadOnlyList<CellAdjacencyRule<TerrainTypes>> Terrain { get; } = new List<CellAdjacencyRule<TerrainTypes>>
+    {
+        new(Flat,
+            Left: Flat | Trees | Water,
+            Top: Flat | Trees | Water,
+            Right: Flat | Trees | Water,
+            Bottom: Flat | Trees | Water),
+
+        new(Water,
+            Left: Flat | Water,
+            Top: Flat | Water,
+            Right: Flat | Water,
+            Bottom: Flat | Water),
+
+        new(Trees,
+            Left: Flat | Trees | TreesDense,
+            Top: Flat | Trees | TreesDense,
+            Right: Flat | Trees | TreesDense,
+            Bottom: Flat | Trees | TreesDense),
+
+        new(TreesDense,
+            Left: Trees | TreesDense,
+            Top: Trees | TreesDense,
+            Right: Trees | TreesDense,
+            Bottom: Trees | TreesDense)
+    };
+
+    public static IReadOnlyList<CellAdjacencyRule<TileTypes>> Base { get; } = new List<CellAdjacencyRule<TileTypes>>
     {
         new(Empty,
             Left: RoadVertical | Empty | BuildingSite | RoadTLeft | RoadCBottomLeft | RoadCTopLeft,

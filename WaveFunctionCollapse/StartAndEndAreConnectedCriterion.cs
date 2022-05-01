@@ -1,6 +1,6 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class StartAndEndAreConnectedCriterion : IGridAcceptanceCriterion<TileType>
+public class StartAndEndAreConnectedCriterion : IGridAcceptanceCriterion<TileTypes>
 {
     private readonly (int x, int y) _start;
     private readonly (int x, int y) _end;
@@ -11,15 +11,15 @@ public class StartAndEndAreConnectedCriterion : IGridAcceptanceCriterion<TileTyp
         _end = end;
     }
 
-    public bool IsMetBy(Grid<TileType> grid)
+    public bool IsMetBy(Grid<TileTypes> grid)
     {
         var start = grid.GetCell(_start.x, _start.y);
         var end = grid.GetCell(_end.x, _end.y);
-        var visited = new HashSet<Cell<TileType>>();
+        var visited = new HashSet<Cell<TileTypes>>();
 
         return SearchEnd(start);
 
-        bool SearchEnd(Cell<TileType> tile)
+        bool SearchEnd(Cell<TileTypes> tile)
         {
             if (!visited.Add(tile)) return false;
             if (tile == end) return true;

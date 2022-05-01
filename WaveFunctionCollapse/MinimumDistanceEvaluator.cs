@@ -25,7 +25,7 @@ public class MinimumDistanceEvaluator<TCellTypeEnum> : ICellCollapseEvaluator<TC
 
     public void Evaluate(Grid<TCellTypeEnum> grid, Cell<TCellTypeEnum> cell, ReadOnlySpan<int> possibleStates, Span<float> evaluations)
     {
-        if ((cell.Mask & _source) == 0 || possibleStates.Length == 1) return;
+        if ((cell.Mask & _target) == 0 || possibleStates.Length == 1) return;
         
         var startX = Math.Max(0, cell.X - _distance);
         var startY = Math.Max(0, cell.Y - _distance);
@@ -37,11 +37,11 @@ public class MinimumDistanceEvaluator<TCellTypeEnum> : ICellCollapseEvaluator<TC
             for (var x = startX; x < endX; x++)
             {
                 var c = grid.GetCell(x, y);
-                if (c.IsCollapsed && (_target & c.Mask) != 0)
+                if (c.IsCollapsed && (_source & c.Mask) != 0)
                 {
                     for (var i = 0; i < possibleStates.Length; i++)
                     {
-                        if ((_source & possibleStates[i]) != 0)
+                        if ((_target & possibleStates[i]) != 0)
                         {
                             evaluations[i] *= 1f - _penalty;
                         }
