@@ -1,6 +1,6 @@
 ﻿namespace WaveFunctionCollapse;
 
-public interface IGridAcceptanceCriterion
+public interface IGridAcceptanceCriterion<T> where T : struct, Enum
 {
-    bool IsMetBy(Grid grid);
+    bool IsMetBy(Grid<T> grid);
 }

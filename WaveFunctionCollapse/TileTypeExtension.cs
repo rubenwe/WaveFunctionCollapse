@@ -1,32 +1,35 @@
-﻿using System.Buffers;
+﻿using EnumUtilities;
 
 namespace WaveFunctionCollapse;
 
-public static class TileTypeExtension
+public static class CellTypeCache<TCellEnumType> where TCellEnumType : struct, Enum
 {
-    private static readonly TileType[][] Cache;
+    // ReSharper disable once StaticMemberInGenericType
+    private static readonly int[][] Cache;
     
-    static TileTypeExtension()
+    static CellTypeCache()
     {
-        var tileTypes = Enum.GetValues<TileType>()
-            .Where(t => t != TileType.OverConstraint)
-            .OrderBy(t => (uint) t)
+        var cellTypes = Enum.GetValues<TCellEnumType>()
+            .Select(t => EnumUtil<TCellEnumType>.ToInt32(t))
+            .Where(t => t != 0)
             .ToArray();
         
-        var maxValue = tileTypes.Aggregate(0, (a, b) => a + (int) b);
+        var maxValue = cellTypes.Aggregate(0, (a, b) => a + b);
 
-        Cache = new TileType[maxValue + 1][];
+        Cache = new int[maxValue + 1][];
         
         for (var i = 0; i <= maxValue; i++)
         {
-            Cache[i] = tileTypes
-                .Where(type => ((TileType) i & type) != 0)
+            Cache[i] = cellTypes
+                .Where(type => (i & type) != 0)
                 .ToArray();
         }
     }
 
-    public static ReadOnlySpan<TileType> GetPossibleStates(this TileType superPosition)
-    {
-        return Cache[(int)superPosition];
-    }
+    public static ReadOnlySpan<int> GetPossibleStates(TCellEnumType superPosition) 
+        => Cache[EnumUtil<TCellEnumType>.ToInt32(superPosition)];
+
+    public static ReadOnlySpan<int> GetPossibleStates(int superPosition) 
+        => Cache[superPosition];
 }
+

@@ -2,10 +2,10 @@
 
 public class AsciiGridView
 {
-    private readonly Grid _grid;
-    private Tile? _marked;
+    private readonly Grid<TileType> _grid;
+    private Cell<TileType>? _marked;
 
-    public AsciiGridView(Grid grid)
+    public AsciiGridView(Grid<TileType> grid)
     {
         _grid = grid;
     }
@@ -17,7 +17,7 @@ public class AsciiGridView
         {
             for (var x = 0; x < _grid.Width; x++)
             {
-                var tile = _grid.GetTile(x, y);
+                var tile = _grid.GetCell(x, y);
                 if (_marked == tile)
                 {
                     sb.Append("©");
@@ -50,9 +50,9 @@ public class AsciiGridView
         return sb.ToString();
     }
 
-    public AsciiGridView Mark(Tile tile)
+    public AsciiGridView Mark(Cell<TileType> cell)
     {
-        _marked = tile;
+        _marked = cell;
         return this;
     }
 }

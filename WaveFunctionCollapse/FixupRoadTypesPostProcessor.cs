@@ -1,8 +1,8 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class FixupRoadTypesPostProcessor : IGridPostProcessor
+public class FixupRoadTypesPostProcessor : IGridPostProcessor<TileType>
 {
-    public void Process(Grid grid)
+    public void Process(Grid<TileType> grid)
     {
         for (var y = 0; y < grid.Height; y++)
         {
@@ -31,7 +31,7 @@ public class FixupRoadTypesPostProcessor : IGridPostProcessor
                     (true, true, true, true) => TileType.RoadCross
                 };
                 
-                grid.SetTileCollapsed(x, y, newType);
+                grid.SetCellCollapsed(x, y, newType);
             }
         }
     }

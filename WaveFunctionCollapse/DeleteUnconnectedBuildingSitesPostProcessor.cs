@@ -1,8 +1,8 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class DeleteUnconnectedBuildingSitesPostProcessor : IGridPostProcessor
+public class DeleteUnconnectedBuildingSitesPostProcessor : IGridPostProcessor<TileType>
 {
-    public void Process(Grid grid)
+    public void Process(Grid<TileType> grid)
     {
         for (var y = 0; y < grid.Height; y++)
         {
@@ -17,7 +17,7 @@ public class DeleteUnconnectedBuildingSitesPostProcessor : IGridPostProcessor
 
                 if (!left && !top && !right && !bottom)
                 {
-                    grid.SetTileCollapsed(x, y, TileType.Empty);
+                    grid.SetCellCollapsed(x, y, TileType.Empty);
                 }
             }
         }

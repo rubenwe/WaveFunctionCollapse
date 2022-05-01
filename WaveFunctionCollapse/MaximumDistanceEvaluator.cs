@@ -1,34 +1,36 @@
-﻿namespace WaveFunctionCollapse;
+﻿using EnumUtilities;
 
-public class MaximumDistanceEvaluator : ITileCollapseEvaluator
+namespace WaveFunctionCollapse;
+
+public class MaximumDistanceEvaluator<T> : ICellCollapseEvaluator<T> where T : struct, Enum
 {
-    private readonly TileType _source;
-    private readonly TileType _target;
+    private readonly int _source;
+    private readonly int _target;
     private readonly int _distance;
 
-    public MaximumDistanceEvaluator(TileType source, TileType target, int distance)
+    public MaximumDistanceEvaluator(T source, T target, int distance)
     {
-        _source = source;
-        _target = target;
+        _source = EnumUtil<T>.ToInt32(source);
+        _target = EnumUtil<T>.ToInt32(target);
         _distance = distance;
     }
 
-    public void Evaluate(Grid grid, Tile tile, ReadOnlySpan<TileType> possibleStates, Span<float> evaluations)
+    public void Evaluate(Grid<T> grid, Cell<T> cell, ReadOnlySpan<int> possibleStates, Span<float> evaluations)
     {
-        if ((tile.Type & _source) == 0) return;
+        if ((cell.Mask & _source) == 0) return;
         
-        var startX = Math.Max(0, tile.X - _distance);
-        var startY = Math.Max(0, tile.Y - _distance);
-        var endX = Math.Min(grid.Width, tile.X + _distance);
-        var endY = Math.Min(grid.Height, tile.Y + _distance);
+        var startX = Math.Max(0, cell.X - _distance);
+        var startY = Math.Max(0, cell.Y - _distance);
+        var endX = Math.Min(grid.Width, cell.X + _distance);
+        var endY = Math.Min(grid.Height, cell.Y + _distance);
 
         var found = false;
         for (var y = startY; y < endY; y++)
         {
             for (var x = startX; x < endX; x++)
             {
-                var t = grid.GetTile(x, y);
-                if (t.IsCollapsed && (_target & t.Type) != 0)
+                var c = grid.GetCell(x, y);
+                if (c.IsCollapsed && (_target & c.Mask) != 0)
                 {
                     found = true;
                     break;

@@ -4,7 +4,7 @@ namespace WaveFunctionCollapse;
 
 public static class TileRules
 {
-    public static IReadOnlyList<TileAdjacencyRule> Default { get; } = new List<TileAdjacencyRule>
+    public static IReadOnlyList<CellAdjacencyRule<TileType>> Ground { get; } = new List<CellAdjacencyRule<TileType>>
     {
         new(Empty,
             Left: RoadVertical | Empty | BuildingSite | RoadTLeft | RoadCBottomLeft | RoadCTopLeft,

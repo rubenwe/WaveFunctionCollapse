@@ -1,6 +1,7 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class RandomCollapseEvaluator : ITileCollapseEvaluator
+public class RandomCollapseEvaluator<TCellTypeEnum> : ICellCollapseEvaluator<TCellTypeEnum> 
+    where TCellTypeEnum : struct, Enum
 {
     private readonly Random _random;
 
@@ -9,7 +10,7 @@ public class RandomCollapseEvaluator : ITileCollapseEvaluator
         _random = new Random(seed);
     }
 
-    public void Evaluate(Grid grid, Tile tile, ReadOnlySpan<TileType> possibleStates, Span<float> evaluations)
+    public void Evaluate(Grid<TCellTypeEnum> grid, Cell<TCellTypeEnum> cell, ReadOnlySpan<int> possibleStates, Span<float> evaluations)
     {
         for (var i = 0; i < evaluations.Length; i++)
         {

@@ -1,6 +1,6 @@
 ﻿namespace WaveFunctionCollapse;
 
-public interface IGridPostProcessor
+public interface IGridPostProcessor<T> where T : struct, Enum
 {
-    void Process(Grid grid);
+    void Process(Grid<T> grid);
 }

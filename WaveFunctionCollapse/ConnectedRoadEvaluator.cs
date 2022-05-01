@@ -1,34 +1,34 @@
 ﻿namespace WaveFunctionCollapse;
 
-public class ConnectedRoadEvaluator : ITileCollapseEvaluator
+public class ConnectedRoadEvaluator : ICellCollapseEvaluator<TileType>
 {
-    public void Evaluate(Grid grid, Tile tile, ReadOnlySpan<TileType> possibleStates, Span<float> evaluations)
+    public void Evaluate(Grid<TileType> grid, Cell<TileType> cell, ReadOnlySpan<int> possibleStates, Span<float> evaluations)
     {
-        if (!tile.Type.IsRoad() || possibleStates.Length == 1) return;
+        if (!cell.Type.IsRoad() || possibleStates.Length == 1) return;
 
         var (left, top, right, bottom) = (false, false, false, false);
 
-        if (tile.X > 0)
+        if (cell.X > 0)
         {
-            var other = grid.GetTile(tile.X - 1, tile.Y);
+            var other = grid.GetCell(cell.X - 1, cell.Y);
             left = other.IsCollapsed && other.Type.IsRoad();
         }
         
-        if (tile.Y > 0)
+        if (cell.Y > 0)
         {
-            var other = grid.GetTile(tile.X, tile.Y - 1);
+            var other = grid.GetCell(cell.X, cell.Y - 1);
             top = other.IsCollapsed && other.Type.IsRoad();
         }
         
-        if (tile.X < grid.Width - 1)
+        if (cell.X < grid.Width - 1)
         {
-            var other = grid.GetTile(tile.X + 1, tile.Y);
+            var other = grid.GetCell(cell.X + 1, cell.Y);
             right = other.IsCollapsed && other.Type.IsRoad();
         }
         
-        if (tile.Y < grid.Height - 1)
+        if (cell.Y < grid.Height - 1)
         {
-            var other = grid.GetTile(tile.X, tile.Y + 1);
+            var other = grid.GetCell(cell.X, cell.Y + 1);
             bottom = other.IsCollapsed && other.Type.IsRoad();
         }
 
@@ -36,7 +36,7 @@ public class ConnectedRoadEvaluator : ITileCollapseEvaluator
         {
             for (var i = 0; i < possibleStates.Length; i++)
             {
-                if (possibleStates[i].IsRoad())
+                if (((TileType) possibleStates[i]).IsRoad())
                 {
                     evaluations[i] = 0f;
                 }

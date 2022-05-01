@@ -10,6 +10,7 @@
   
   <ItemGroup>
     <PackageReference Include="QuikGraph" Version="2.3.0" />
+    <PackageReference Include="EnumUtilities" Version="4.0.0" />
   </ItemGroup>
   
 </Project>

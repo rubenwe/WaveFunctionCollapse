@@ -18,14 +18,14 @@ public class TileCollapserTests
      * +---+    +---+
      */
         
-        var grid = new Grid(3, 5);
+        var grid = new Grid<TileType>(3, 5);
         grid.SetColumn(0, Empty);
         grid.SetColumn(2, Empty);
         
-        grid.SetTile(1, 0, RoadVertical);
-        grid.SetTile(1, 4, RoadVertical);
+        grid.SetCell(1, 0, RoadVertical);
+        grid.SetCell(1, 4, RoadVertical);
         
-        var collapser = new TileCollapser(grid, TileRules.Default);
+        var collapser = new CellCollapser<TileType>(grid, TileRules.Ground);
         Assert.IsTrue(collapser.TryCollapse(200, out var result));
         Assert.AreEqual(RoadVertical, result[1, 1]);
         Assert.AreEqual(RoadVertical, result[1, 2]);
@@ -43,14 +43,14 @@ public class TileCollapserTests
      * +-----+    +-----+
      */
         
-        var grid = new Grid(5, 3);
+        var grid = new Grid<TileType>(5, 3);
         grid.SetRow(0, Empty);
         grid.SetRow(2, Empty);
         
-        grid.SetTile(0, 1, RoadHorizontal);
-        grid.SetTile(4, 1, RoadHorizontal);
+        grid.SetCell(0, 1, RoadHorizontal);
+        grid.SetCell(4, 1, RoadHorizontal);
         
-        var collapser = new TileCollapser(grid, TileRules.Default);
+        var collapser = new CellCollapser<TileType>(grid, TileRules.Ground);
         Assert.IsTrue(collapser.TryCollapse(200, out var result));
         Assert.AreEqual(RoadHorizontal, result[1, 1]);
         Assert.AreEqual(RoadHorizontal, result[2, 1]);
@@ -70,19 +70,19 @@ public class TileCollapserTests
      * +---+    +---+
      */
         
-        var grid = new Grid(3, 5);
+        var grid = new Grid<TileType>(3, 5);
         grid.SetColumn(2, Empty);
         
-        grid.SetTile(0, 0, Empty);
-        grid.SetTile(0, 1, Empty);
-        grid.SetTile(0, 2, RoadHorizontal);
-        grid.SetTile(0, 3, Empty);
-        grid.SetTile(0, 4, Empty);
+        grid.SetCell(0, 0, Empty);
+        grid.SetCell(0, 1, Empty);
+        grid.SetCell(0, 2, RoadHorizontal);
+        grid.SetCell(0, 3, Empty);
+        grid.SetCell(0, 4, Empty);
         
-        grid.SetTile(1, 0, RoadVertical);
-        grid.SetTile(1, 4, RoadVertical);
+        grid.SetCell(1, 0, RoadVertical);
+        grid.SetCell(1, 4, RoadVertical);
        
-        var collapser = new TileCollapser(grid, TileRules.Default);
+        var collapser = new CellCollapser<TileType>(grid, TileRules.Ground);
         Assert.IsTrue(collapser.TryCollapse(200, out var result, out _));
         
         Assert.AreEqual(RoadVertical, result[1, 1]);
@@ -103,19 +103,19 @@ public class TileCollapserTests
      * +---+    +---+
      */
         
-        var grid = new Grid(3, 5);
+        var grid = new Grid<TileType>(3, 5);
         grid.SetColumn(0, Empty);
         
-        grid.SetTile(2, 0, Empty);
-        grid.SetTile(2, 1, Empty);
-        grid.SetTile(2, 2, RoadHorizontal);
-        grid.SetTile(2, 3, Empty);
-        grid.SetTile(2, 4, Empty);
+        grid.SetCell(2, 0, Empty);
+        grid.SetCell(2, 1, Empty);
+        grid.SetCell(2, 2, RoadHorizontal);
+        grid.SetCell(2, 3, Empty);
+        grid.SetCell(2, 4, Empty);
         
-        grid.SetTile(1, 0, RoadVertical);
-        grid.SetTile(1, 4, RoadVertical);
+        grid.SetCell(1, 0, RoadVertical);
+        grid.SetCell(1, 4, RoadVertical);
        
-        var collapser = new TileCollapser(grid, TileRules.Default);
+        var collapser = new CellCollapser<TileType>(grid, TileRules.Ground);
         Assert.IsTrue(collapser.TryCollapse(200, out var result));
         
         Assert.AreEqual(RoadVertical, result[1, 1]);
@@ -136,18 +136,18 @@ public class TileCollapserTests
      * +---+    +---+
      */
         
-        var grid = new Grid(3, 5);
+        var grid = new Grid<TileType>(3, 5);
         
         grid.SetColumn(0, Empty);
         grid.SetColumn(2, Empty);
         
-        grid.SetTile(0, 2, RoadHorizontal);
-        grid.SetTile(2, 2, RoadHorizontal);
+        grid.SetCell(0, 2, RoadHorizontal);
+        grid.SetCell(2, 2, RoadHorizontal);
         
-        grid.SetTile(1, 0, RoadVertical);
-        grid.SetTile(1, 4, RoadVertical);
+        grid.SetCell(1, 0, RoadVertical);
+        grid.SetCell(1, 4, RoadVertical);
        
-        var collapser = new TileCollapser(grid, TileRules.Default);
+        var collapser = new CellCollapser<TileType>(grid, TileRules.Ground);
         Assert.IsTrue(collapser.TryCollapse(200, out var result));
         
         Assert.AreEqual(RoadVertical, result[1, 1]);

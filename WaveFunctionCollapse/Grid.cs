@@ -1,24 +1,32 @@
-﻿using System.Collections;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using EnumUtilities;
 
 namespace WaveFunctionCollapse;
 
-public class Grid : IEnumerable<TileType>
+public class Grid<TCellTypeEnum>
+    where TCellTypeEnum : struct, Enum
 {
+    // ReSharper disable once StaticMemberInGenericType
+    private static readonly Vector256<sbyte> ComparisonStartVector =  Vector256.Create(MaxStateCompareValue);
     private const sbyte MaxStateCompareValue = 63;
+    
     private const sbyte Collapsed = sbyte.MaxValue;
-    private readonly TileType[] _data;
+    private readonly int[] _data;
     private readonly sbyte[] _state;
-    private static readonly  Vector256<sbyte> ComparisonStartVector =  Vector256.Create(MaxStateCompareValue);
-
+    
     public int Height { get; }
     public int Width { get; }
 
     public Grid(int width, int height)
     {
+        if (EnumUtil<TCellTypeEnum>.GetUnderlyingType() != typeof(int))
+        {
+            throw new InvalidOperationException("Only int based enums are supported");
+        }
+        
         Height = height;
         Width = width;
 
@@ -26,14 +34,17 @@ public class Grid : IEnumerable<TileType>
         var remainder = dataLength % 32;
         var stateLength = remainder == 0 ? dataLength : dataLength + (32 - remainder);
         
-        _data = new TileType[dataLength];
+        _data = new int[dataLength];
         _state = new sbyte[stateLength];
 
-        var maxValue = Enum.GetValues<TileType>().Aggregate(0, (a, b) => a + (int) b);
+        var maxValue = Enum
+            .GetValues<TCellTypeEnum>()
+            .Aggregate(0, (a, b) => a + EnumUtil<TCellTypeEnum>.ToInt32(b));
+        
         var stateDefault = (sbyte) BitOperations.PopCount((uint) maxValue);
         for (var i = 0; i < _data.Length; i++)
         {
-            _data[i] = (TileType) maxValue;
+            _data[i] = maxValue;
             _state[i] = stateDefault;
         }
 
@@ -43,7 +54,10 @@ public class Grid : IEnumerable<TileType>
         }
     }
 
-    public void RestrictStatesTo(int x, int y, TileType mask)
+    public void RestrictStatesTo(int x, int y, TCellTypeEnum mask) 
+        => RestrictStatesTo(x, y, EnumUtil<TCellTypeEnum>.ToInt32(mask));
+
+    public void RestrictStatesTo(int x, int y, int mask)
     {
         var index = x + Width * y;
         ref var state = ref _state[index];
@@ -51,50 +65,62 @@ public class Grid : IEnumerable<TileType>
         if (state == Collapsed)
         {
             if ((mask & value) != 0) return;
-            OverConstraintTileException.Throw(x, y);
+            OverConstraintCellException.Throw(x, y);
         }
-        
+
         value &= mask;
-        state = (sbyte) BitOperations.PopCount((uint)value);
-        
-        OverConstraintTileException.ThrowOnViolation(value, x, y);
+        state = (sbyte)BitOperations.PopCount((uint)value);
+
+        if (value == 0)
+        {
+            OverConstraintCellException.Throw(x, y);
+        }
     }
 
-    public TileType this[int x, int y] => _data[x + y * Width];
+    public TCellTypeEnum this[int x, int y] => EnumUtil<TCellTypeEnum>.FromInt32(_data[x + y * Width]);
 
-    public void SetTile(int x, int y, TileType type)
+    public void SetCell(int x, int y, TCellTypeEnum value)
     {
         var index = x + y * Width;
-        _data[index] = type;
+        _data[index] = EnumUtil<TCellTypeEnum>.ToInt32(value);
         _state[index] = 1;
     }
     
-    public void SetTileCollapsed(int x, int y, TileType type)
+    public void SetCellCollapsed(int x, int y, TCellTypeEnum value)
     {
         var index = x + y * Width;
-        _data[index] = type;
+        _data[index] = EnumUtil<TCellTypeEnum>.ToInt32(value);
+        _state[index] = Collapsed;
+    }
+    
+    public void SetCellCollapsed(int x, int y, int value)
+    {
+        var index = x + y * Width;
+        _data[index] = value;
         _state[index] = Collapsed;
     }
 
-    public Tile GetTile(int x, int y)
+    public Cell<TCellTypeEnum> GetCell(int x, int y)
     {
         var idx = x + y * Width;
-        return new Tile(x, y, _data[idx], _state[idx] == Collapsed);
+        return new Cell<TCellTypeEnum>(x, y, _data[idx], _state[idx] == Collapsed);
     }
 
-    public Tile? FindMostConstrainedTile()
+    public int GetCellMask(int x, int y) => _data[x + y * Width];
+
+    public Cell<TCellTypeEnum>? FindMostConstrainedCell()
     {
         var minIdx = Avx2.IsSupported 
             ? FindMinVector() 
             : FindMinScalar();
 
-        if (minIdx == -1) return null; // no more tiles to collapse
+        if (minIdx == -1) return null; // no more cells to collapse
         
         var x = minIdx % Width;
         var y = minIdx / Width;
         ref var currentStates = ref _data[minIdx];
 
-        return new Tile(x, y, currentStates, false);
+        return new Cell<TCellTypeEnum>(x, y, currentStates, false);
     }
 
     private int FindMinVector()
@@ -151,28 +177,30 @@ public class Grid : IEnumerable<TileType>
         return minIdx;
     }
 
-    public void SetRow(int y, TileType type)
+    public void SetRow(int y, TCellTypeEnum type)
     {
         var start = y * Width;
+        var value = EnumUtil<TCellTypeEnum>.ToInt32(type);
         for(var startX = 0; startX < Width; startX++)
         {
             var index = start + startX;
-            _data[index] = type;
+            _data[index] = value;
             _state[index] = 1;
         }
     }
 
-    public void SetColumn(int x, TileType type)
+    public void SetColumn(int x, TCellTypeEnum type)
     {
+        var value = EnumUtil<TCellTypeEnum>.ToInt32(type);
         for (var startY = 0; startY < Height; startY++)
         {
             var index = x + startY * Width;
-            _data[index] = type;
+            _data[index] = value;
             _state[index] = 1;
         }
     }
     
-    public Grid CloneInto(Grid other)
+    public Grid<TCellTypeEnum> CloneInto(Grid<TCellTypeEnum> other)
     {
         Array.Copy(_data, other._data, _data.Length);
         Array.Copy(_state, other._state, _state.Length);
@@ -180,25 +208,8 @@ public class Grid : IEnumerable<TileType>
         return other;
     }
 
-    public Grid Clone()
+    public Grid<TCellTypeEnum> Clone()
     {
-        return CloneInto(new Grid(Width, Height));
-    }
-
-    public void Collapse(int x, int y, TileType tileType)
-    {
-        var index = x + Width * y;
-        _data[index] = tileType;
-        _state[index] = Collapsed;
-    }
-
-    public IEnumerator<TileType> GetEnumerator()
-    {
-        return _data.AsEnumerable().GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _data.GetEnumerator();
+        return CloneInto(new Grid<TCellTypeEnum>(Width, Height));
     }
 }

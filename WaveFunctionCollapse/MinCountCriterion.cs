@@ -1,18 +1,33 @@
-﻿namespace WaveFunctionCollapse;
+﻿using EnumUtilities;
 
-public class MinCountCriterion : IGridAcceptanceCriterion
+namespace WaveFunctionCollapse;
+
+public class MinCountCriterion<TCellTypeEnum> : IGridAcceptanceCriterion<TCellTypeEnum>
+    where TCellTypeEnum : struct, Enum
 {
-    private readonly TileType _tileType;
+    private readonly int _cellType;
     private readonly int _count;
 
-    public MinCountCriterion(TileType tileType, int count)
+    public MinCountCriterion(TCellTypeEnum cellType, int count)
     {
-        _tileType = tileType;
+        _cellType = EnumUtil<TCellTypeEnum>.ToInt32(cellType);
         _count = count;
     }
 
-    public bool IsMetBy(Grid grid)
+    public bool IsMetBy(Grid<TCellTypeEnum> grid)
     {
-        return grid.Count(t => t == _tileType) >= _count;
+        var count = 0;
+        for (var y = 0; y < grid.Height; y++)
+        {
+            for (var x = 0; x < grid.Width; x++)
+            {
+                if (grid.GetCellMask(x, y) == _cellType)
+                {
+                    if (++count >= _count) return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
